@@ -35,7 +35,8 @@ class GFromJSON a where
   gparseJSON' :: Ae.Value -> Ae.Parser a
 
 instance GFromJSON Z where
-  gparseJSON' _ = fail "G.I.F.A.GFromJSON Z gparseJSON' - impossible"
+  gparseJSON' _ = fail
+    "Generics.Instant.Functions.Aeson.GFromJSON Z gparseJSON' - impossible"
   {-# INLINE gparseJSON' #-}
 
 instance GFromJSON U where
@@ -47,7 +48,8 @@ instance GFromJSON a => GFromJSON (CEq c p p a) where
   {-# INLINE gparseJSON' #-}
 
 instance {-# OVERLAPPABLE #-} GFromJSON (CEq c p q a) where
-  gparseJSON' _ = fail "G.I.F.A.GFtomJSON (CEq c p q a) gparseJSON' - impossible"
+  gparseJSON' _ = fail
+    "Generics.Instant.Functions.Aeson.GFtomJSON (CEq c p q a) gparseJSON' - impossible"
   {-# INLINE gparseJSON' #-}
 
 instance Ae.FromJSON a => GFromJSON (Var a) where
@@ -75,7 +77,8 @@ instance
       let size = unTagged (sumSize :: Tagged (a :+: b) Integer)
       in if code < size
          then gsumParseJSON code size v'
-         else fail "G.I.F.A.GFromJSON (a :+: b) - Unknown constructor"
+         else fail "Generics.Instant.Functions.Aeson.GFromJSON (a :+: b) - \
+                   \Unknown constructor"
     {-# INLINE gparseJSON' #-}
 
 --------------------------------------------------------------------------------
@@ -84,7 +87,8 @@ class GToJSON a where
   gtoJSON' :: a -> Ae.Value
 
 instance GToJSON Z where
-  gtoJSON' _ = error "G.I.F.A.GToJSON Z gtoJSON' - impossible"
+  gtoJSON' _ = error
+    "Generics.Instant.Functions.Aeson.GToJSON Z gtoJSON' - impossible"
   {-# INLINE gtoJSON' #-}
 
 instance GToJSON U where
@@ -96,7 +100,8 @@ instance GToJSON a => GToJSON (CEq c p p a) where
   {-# INLINE gtoJSON' #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GToJSON (CEq c p q a) where
-  gtoJSON' _ = error "G.I.F.A.GToJSON (CEq c p q a) gtoJSON' - impossible"
+  gtoJSON' _ = error
+    "Generics.Instant.Functions.Aeson.GToJSON (CEq c p q a) gtoJSON' - impossible"
   {-# INLINE gtoJSON' #-}
 
 instance Ae.ToJSON a => GToJSON (Var a) where
@@ -144,7 +149,8 @@ instance GFromJSON a => GSumFromJSON (CEq c p p a) where
   {-# INLINE gsumParseJSON #-}
 
 instance {-# OVERLAPPABLE #-} GSumFromJSON (CEq c p q a) where
-  gsumParseJSON _ _ _ = fail "G.I.F.A.GSumFromJSON (CEq c p q a) - impossible"
+  gsumParseJSON _ _ _ = fail
+    "Generics.Instant.Functions.Aeson.GSumFromJSON (CEq c p q a) - impossible"
   {-# INLINE gsumParseJSON #-}
 
 --------------------------------------------------------------------------------
@@ -169,10 +175,11 @@ instance GToJSON a => GSumToJSON (CEq c p p a) where
   {-# INLINE gsumToJSON #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GSumToJSON (CEq c p q a) where
-  gsumToJSON _ _ _ = error "G.I.F.A.GSumToJSON (CEq c p q a) - impossible"
+  gsumToJSON _ _ _ = error
+    "Generics.Instant.Functions.Aeson.GSumToJSON (CEq c p q a) - impossible"
   {-# INLINE gsumToJSON #-}
 
-------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 class SumSize a where
   sumSize :: Tagged a Integer
