@@ -37,7 +37,6 @@ class GFromJSON a where
 instance GFromJSON Z where
   gparseJSON' _ = fail
     "Generics.Instant.Functions.Aeson.GFromJSON Z gparseJSON' - impossible"
-  {-# INLINE gparseJSON' #-}
 
 instance GFromJSON U where
   gparseJSON' v = U <$ (Ae.parseJSON v :: Ae.Parser ())
@@ -50,7 +49,6 @@ instance GFromJSON a => GFromJSON (CEq c p p a) where
 instance {-# OVERLAPPABLE #-} GFromJSON (CEq c p q a) where
   gparseJSON' _ = fail
     "Generics.Instant.Functions.Aeson.GFtomJSON (CEq c p q a) gparseJSON' - impossible"
-  {-# INLINE gparseJSON' #-}
 
 instance Ae.FromJSON a => GFromJSON (Var a) where
   gparseJSON' v = Ae.parseJSON v >>= \a -> return (Var a)
@@ -89,7 +87,6 @@ class GToJSON a where
 instance GToJSON Z where
   gtoJSON' _ = error
     "Generics.Instant.Functions.Aeson.GToJSON Z gtoJSON' - impossible"
-  {-# INLINE gtoJSON' #-}
 
 instance GToJSON U where
   gtoJSON' U = Ae.toJSON ()
@@ -102,7 +99,6 @@ instance GToJSON a => GToJSON (CEq c p p a) where
 instance {-# OVERLAPPABLE #-} GToJSON a => GToJSON (CEq c p q a) where
   gtoJSON' _ = error
     "Generics.Instant.Functions.Aeson.GToJSON (CEq c p q a) gtoJSON' - impossible"
-  {-# INLINE gtoJSON' #-}
 
 instance Ae.ToJSON a => GToJSON (Var a) where
   gtoJSON' (Var a) = Ae.toJSON a
@@ -151,7 +147,6 @@ instance GFromJSON a => GSumFromJSON (CEq c p p a) where
 instance {-# OVERLAPPABLE #-} GSumFromJSON (CEq c p q a) where
   gsumParseJSON _ _ _ = fail
     "Generics.Instant.Functions.Aeson.GSumFromJSON (CEq c p q a) - impossible"
-  {-# INLINE gsumParseJSON #-}
 
 --------------------------------------------------------------------------------
 
@@ -177,7 +172,6 @@ instance GToJSON a => GSumToJSON (CEq c p p a) where
 instance {-# OVERLAPPABLE #-} GToJSON a => GSumToJSON (CEq c p q a) where
   gsumToJSON _ _ _ = error
     "Generics.Instant.Functions.Aeson.GSumToJSON (CEq c p q a) - impossible"
-  {-# INLINE gsumToJSON #-}
 
 --------------------------------------------------------------------------------
 
