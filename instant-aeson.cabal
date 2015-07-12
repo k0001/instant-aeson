@@ -9,6 +9,7 @@ category:            Web
 build-type:          Simple
 extra-source-files:  README.md CHANGELOG.md
 cabal-version:       >=1.18
+synopsis:            Generic Aeson instances through instant-generics
 
 library
   hs-source-dirs: src/lib
