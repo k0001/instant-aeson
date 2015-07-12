@@ -17,7 +17,7 @@ module Generics.Instant.Functions.Aeson
     -- ** Even more internal
   , GSumFromJSON
   , GSumToJSON
-  , SumSize
+  , GSumSize
   ) where
 
 import qualified Data.Aeson as Ae
@@ -82,7 +82,7 @@ instance (GFromJSON a, GFromJSON b) => GFromJSON (a :*: b) where
 
 -- Borrowed from the "binary" package, which borrowed this from "cereal".
 instance
-  ( GSumFromJSON a, GSumFromJSON b, SumSize a, SumSize b
+  ( GSumFromJSON a, GSumFromJSON b, GSumSize a, GSumSize b
   , GFromJSON a, GFromJSON b
   ) => GFromJSON (a :+: b)
   where
@@ -129,7 +129,7 @@ instance (GToJSON a, GToJSON b) => GToJSON (a :*: b) where
 
 -- Borrowed from the "binary" package, which borrowed this from "cereal".
 instance
-  ( GSumToJSON a, GSumToJSON b, SumSize a, SumSize b
+  ( GSumToJSON a, GSumToJSON b, GSumSize a, GSumSize b
   , GToJSON a, GToJSON b
   ) => GToJSON (a :+: b)
   where
@@ -190,16 +190,16 @@ instance {-# OVERLAPPABLE #-} GToJSON a => GSumToJSON (CEq c p q a) where
 
 --------------------------------------------------------------------------------
 
-class SumSize a where
+class GSumSize a where
   sumSize :: Tagged a Integer
 
 newtype Tagged s b = Tagged { unTagged :: b }
 
-instance (SumSize a, SumSize b) => SumSize (a :+: b) where
+instance (GSumSize a, GSumSize b) => GSumSize (a :+: b) where
   {-# INLINE sumSize #-}
   sumSize = Tagged (unTagged (sumSize :: Tagged a Integer) +
                     unTagged (sumSize :: Tagged b Integer))
 
-instance SumSize (CEq c p q a) where
+instance GSumSize (CEq c p q a) where
   {-# INLINE sumSize #-}
   sumSize = Tagged 1
