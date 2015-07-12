@@ -1,5 +1,5 @@
 name:                instant-aeson
-version:             0.0.1
+version:             0.1
 author:              Renzo Carbonara
 maintainer:          renzo@carbonara.com.ar
 copyright:           Renzo Carbonara 2015
@@ -15,10 +15,12 @@ library
   default-language: Haskell2010
   exposed-modules:
       Generics.Instant.Functions.Aeson
+      Generics.Instant.Functions.Aeson.TH
   build-depends:
       aeson >=0.8 && <0.10
     , base >=4.8 && <4.9
     , instant-generics >=0.4 && <0.5
+    , template-haskell >=2.10 && <2.11
   ghcjs-options: -Wall -Werror
   ghc-options: -Wall -Werror
 

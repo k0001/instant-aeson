@@ -8,10 +8,16 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Generics.Instant.Functions.Aeson
-  ( GFromJSON
+  ( -- $defaults
+    gtoJSON
   , gparseJSON
+    -- * Internals
   , GToJSON
-  , gtoJSON
+  , GFromJSON
+    -- ** Even more internal
+  , GSumFromJSON
+  , GSumToJSON
+  , SumSize
   ) where
 
 import qualified Data.Aeson as Ae
@@ -20,6 +26,15 @@ import           Data.Bits
 import           Generics.Instant
 
 --------------------------------------------------------------------------------
+-- $defaults
+--
+-- You can use 'gtoJSON' and 'gparseJSON' as your generic 'Ae.toJSON' and
+-- 'Ae.parseJSON' implementations for any 'Representable' type as follows:
+--
+-- @
+-- instance 'Ae.ToJSON' MyType where toJSON = 'gtoJSON'
+-- instance 'Ae.FromJSON' MyType where parseJSON = 'gparseJSON'
+-- @
 
 gtoJSON :: (Representable a, GToJSON (Rep a)) => a -> Ae.Value
 gtoJSON = \a -> gtoJSON' (from a)

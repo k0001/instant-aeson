@@ -15,6 +15,7 @@ module Main where
 import Test.Tasty
 import Test.Tasty.QuickCheck as QC
 
+import qualified Data.Aeson
 import qualified Data.Aeson as Ae
 import qualified Data.Aeson.Types as Ae
 import Data.Proxy
@@ -22,6 +23,7 @@ import Data.Proxy
 import qualified Generics.Instant as GI
 import qualified Generics.Instant.TH as GI
 import Generics.Instant.Functions.Aeson (GFromJSON, gparseJSON, GToJSON, gtoJSON)
+import Generics.Instant.Functions.Aeson.TH (deriveToJSON, deriveFromJSON)
 
 --------------------------------------------------------------------------------
 -- orphans
@@ -47,15 +49,13 @@ instance Ae.FromJSON (Proxy a) where
 
 data ZZ = ZZ1 Int | ZZ2 Char | ZZ3 ZZ deriving (Show, Eq)
 GI.deriveAll ''ZZ
-instance Ae.ToJSON ZZ where
-  toJSON = gtoJSON
-instance Ae.FromJSON ZZ where
-  parseJSON = gparseJSON
 instance Arbitrary ZZ where
   arbitrary = QC.oneof [ ZZ1 <$> QC.arbitrary
                        , ZZ2 <$> QC.arbitrary
                        , ZZ3 <$> QC.arbitrary ]
 
+deriveToJSON [t|ZZ|]
+deriveFromJSON [t|ZZ|]
 
 --------------------------------------------------------------------------------
 -- GADT
