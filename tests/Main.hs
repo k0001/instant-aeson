@@ -23,7 +23,6 @@ import Data.Proxy
 import qualified Generics.Instant as GI
 import qualified Generics.Instant.TH as GI
 import Generics.Instant.Functions.Aeson (GFromJSON, gparseJSON, GToJSON, gtoJSON)
-import Generics.Instant.Functions.Aeson.TH (deriveToJSON, deriveFromJSON)
 
 --------------------------------------------------------------------------------
 -- orphans
@@ -37,12 +36,9 @@ instance GI.Representable () where
 
 GI.deriveAll ''Either
 
-instance Arbitrary (Proxy a) where
-  arbitrary = return Proxy
-instance Ae.ToJSON (Proxy a) where
-  toJSON _ = Ae.toJSON ()
-instance Ae.FromJSON (Proxy a) where
-  parseJSON v = Ae.parseJSON v >>= \() -> return Proxy
+instance Arbitrary (Proxy a) where arbitrary = return Proxy
+instance Ae.ToJSON (Proxy a) where toJSON _ = Ae.toJSON ()
+instance Ae.FromJSON (Proxy a) where parseJSON v = Ae.parseJSON v >>= \() -> return Proxy
 
 --------------------------------------------------------------------------------
 -- many constructors, recursive
@@ -54,8 +50,8 @@ instance Arbitrary ZZ where
                        , ZZ2 <$> QC.arbitrary
                        , ZZ3 <$> QC.arbitrary ]
 
-deriveToJSON [t|ZZ|]
-deriveFromJSON [t|ZZ|]
+instance Ae.ToJSON ZZ where toJSON = gtoJSON
+instance Ae.FromJSON ZZ where parseJSON = gparseJSON
 
 --------------------------------------------------------------------------------
 -- GADT

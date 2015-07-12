@@ -112,8 +112,8 @@ instance GToJSON a => GToJSON (CEq c p p a) where
   {-# INLINE gtoJSON' #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GToJSON (CEq c p q a) where
-  gtoJSON' _ = error
-    "Generics.Instant.Functions.Aeson.GToJSON (CEq c p q a) gtoJSON' - impossible"
+  gtoJSON' (C a) = gtoJSON' a
+  {-# INLINE gtoJSON' #-}
 
 instance Ae.ToJSON a => GToJSON (Var a) where
   gtoJSON' (Var a) = Ae.toJSON a
@@ -185,8 +185,8 @@ instance GToJSON a => GSumToJSON (CEq c p p a) where
   {-# INLINE gsumToJSON #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GSumToJSON (CEq c p q a) where
-  gsumToJSON _ _ _ = error
-    "Generics.Instant.Functions.Aeson.GSumToJSON (CEq c p q a) - impossible"
+  gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON' ca)
+  {-# INLINE gsumToJSON #-}
 
 --------------------------------------------------------------------------------
 
