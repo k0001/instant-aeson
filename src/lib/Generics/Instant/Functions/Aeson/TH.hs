@@ -3,6 +3,10 @@
 -- @
 -- import qualified Data.Aeson
 -- @
+--
+-- WARNING: Template Haskell is hard, and this module by no means try to be
+-- truly comprehensive. If you can't get this TH to work as you want it to, try
+-- manually using the tools exported from "Generics.Instant.Functions.Aeson".
 module Generics.Instant.Functions.Aeson.TH
   ( deriveToJSON
   , deriveFromJSON
