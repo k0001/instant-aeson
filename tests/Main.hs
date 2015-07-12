@@ -42,6 +42,20 @@ instance Ae.ToJSON (Proxy a) where
 instance Ae.FromJSON (Proxy a) where
   parseJSON v = Ae.parseJSON v >>= \() -> return Proxy
 
+--------------------------------------------------------------------------------
+-- many constructors, recursive
+
+data ZZ = ZZ1 Int | ZZ2 Char | ZZ3 ZZ deriving (Show, Eq)
+GI.deriveAll ''ZZ
+instance Ae.ToJSON ZZ where
+  toJSON = gtoJSON
+instance Ae.FromJSON ZZ where
+  parseJSON = gparseJSON
+instance Arbitrary ZZ where
+  arbitrary = QC.oneof [ ZZ1 <$> QC.arbitrary
+                       , ZZ2 <$> QC.arbitrary
+                       , ZZ3 <$> QC.arbitrary ]
+
 
 --------------------------------------------------------------------------------
 -- GADT
@@ -110,11 +124,13 @@ tests = testGroup "QuickCheck - prop_IdJSON"
   , QC.testProperty "Maybe Char" (prop_IdJSON :: Maybe Char -> Bool)
   , QC.testProperty "Maybe Float" (prop_IdJSON :: Maybe Float -> Bool)
   , QC.testProperty "Maybe Int" (prop_IdJSON :: Maybe Int -> Bool)
+  , QC.testProperty "Maybe ZZ" (prop_IdJSON :: Maybe ZZ -> Bool)
   , QC.testProperty "[()]" (prop_IdJSON :: [()] -> Bool)
   , QC.testProperty "[Bool]" (prop_IdJSON :: [Bool] -> Bool)
   , QC.testProperty "[Char]" (prop_IdJSON :: [Char] -> Bool)
   , QC.testProperty "[Float]" (prop_IdJSON :: [Float] -> Bool)
   , QC.testProperty "[Int]" (prop_IdJSON :: [Int] -> Bool)
+  , QC.testProperty "[ZZ]" (prop_IdJSON :: [ZZ] -> Bool)
   , QC.testProperty "Foo1 Int" (prop_IdJSON :: Foo1 Int -> Bool)
   , QC.testProperty "Foo1 Char" (prop_IdJSON :: Foo1 Char -> Bool)
   , QC.testProperty "Foo2 Float Int" (prop_IdJSON :: Foo2 Float Int -> Bool)
