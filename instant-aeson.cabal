@@ -20,8 +20,8 @@ library
       aeson >=0.8 && <0.10
     , base >=4.8 && <4.9
     , instant-generics >=0.4 && <0.5
-  ghcjs-options: -Wall -Werror
-  ghc-options: -Wall -Werror
+  ghcjs-options: -Wall -Werror -O3
+  ghc-options: -Wall -Werror -O2
 
 
 test-suite tests
