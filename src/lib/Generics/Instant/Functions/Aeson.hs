@@ -37,11 +37,11 @@ import           Generics.Instant
 
 gtoJSON :: (Representable a, GToJSON (Rep a)) => a -> Ae.Value
 gtoJSON = \a -> gtoJSON' (from a)
-{-# INLINE gtoJSON #-}
+{-# INLINABLE gtoJSON #-}
 
 gparseJSON :: (Representable a, GFromJSON (Rep a)) => Ae.Value -> Ae.Parser a
 gparseJSON = \v -> fmap to (gparseJSON' v)
-{-# INLINE gparseJSON #-}
+{-# INLINABLE gparseJSON #-}
 
 --------------------------------------------------------------------------------
 
@@ -54,11 +54,11 @@ instance GFromJSON Z where
 
 instance GFromJSON U where
   gparseJSON' v = U <$ (Ae.parseJSON v :: Ae.Parser ())
-  {-# INLINE gparseJSON' #-}
+  {-# INLINABLE gparseJSON' #-}
 
 instance GFromJSON a => GFromJSON (CEq c p p a) where
   gparseJSON' v = gparseJSON' v >>= \a -> return (C a)
-  {-# INLINE gparseJSON' #-}
+  {-# INLINABLE gparseJSON' #-}
 
 instance {-# OVERLAPPABLE #-} GFromJSON (CEq c p q a) where
   gparseJSON' _ = fail
@@ -66,18 +66,18 @@ instance {-# OVERLAPPABLE #-} GFromJSON (CEq c p q a) where
 
 instance Ae.FromJSON a => GFromJSON (Var a) where
   gparseJSON' v = Ae.parseJSON v >>= \a -> return (Var a)
-  {-# INLINE gparseJSON' #-}
+  {-# INLINABLE gparseJSON' #-}
 
 instance Ae.FromJSON a => GFromJSON (Rec a) where
   gparseJSON' v = Ae.parseJSON v >>= \a -> return (Rec a)
-  {-# INLINE gparseJSON' #-}
+  {-# INLINABLE gparseJSON' #-}
 
 instance (GFromJSON a, GFromJSON b) => GFromJSON (a :*: b) where
   gparseJSON' v = Ae.parseJSON v >>= \(va, vb) ->
                   gparseJSON' va >>= \a ->
                   gparseJSON' vb >>= \b ->
                   return (a :*: b)
-  {-# INLINE gparseJSON' #-}
+  {-# INLINABLE gparseJSON' #-}
 
 -- Borrowed from the "binary" package, which borrowed this from "cereal".
 instance
@@ -91,7 +91,7 @@ instance
          then gsumParseJSON code size v'
          else fail "Generics.Instant.Functions.Aeson.GFromJSON (a :+: b) - \
                    \Unknown constructor"
-    {-# INLINE gparseJSON' #-}
+    {-# INLINABLE gparseJSON' #-}
 
 --------------------------------------------------------------------------------
 
@@ -104,27 +104,27 @@ instance GToJSON Z where
 
 instance GToJSON U where
   gtoJSON' U = Ae.toJSON ()
-  {-# INLINE gtoJSON' #-}
+  {-# INLINABLE gtoJSON' #-}
 
 instance GToJSON a => GToJSON (CEq c p p a) where
   gtoJSON' (C a) = gtoJSON' a
-  {-# INLINE gtoJSON' #-}
+  {-# INLINABLE gtoJSON' #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GToJSON (CEq c p q a) where
   gtoJSON' (C a) = gtoJSON' a
-  {-# INLINE gtoJSON' #-}
+  {-# INLINABLE gtoJSON' #-}
 
 instance Ae.ToJSON a => GToJSON (Var a) where
   gtoJSON' (Var a) = Ae.toJSON a
-  {-# INLINE gtoJSON' #-}
+  {-# INLINABLE gtoJSON' #-}
 
 instance Ae.ToJSON a => GToJSON (Rec a) where
   gtoJSON' (Rec a) = Ae.toJSON a
-  {-# INLINE gtoJSON' #-}
+  {-# INLINABLE gtoJSON' #-}
 
 instance (GToJSON a, GToJSON b) => GToJSON (a :*: b) where
   gtoJSON' (a :*: b) = Ae.toJSON (gtoJSON' a, gtoJSON' b)
-  {-# INLINE gtoJSON' #-}
+  {-# INLINABLE gtoJSON' #-}
 
 -- Borrowed from the "binary" package, which borrowed this from "cereal".
 instance
@@ -135,7 +135,7 @@ instance
     gtoJSON' x =
       let size = unTagged (sumSize :: Tagged (a :+: b) Integer)
       in gsumToJSON 0 size x
-    {-# INLINE gtoJSON' #-}
+    {-# INLINABLE gtoJSON' #-}
 
 --------------------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ instance
   ( GSumFromJSON a, GSumFromJSON b, GFromJSON a, GFromJSON b
   ) => GSumFromJSON (a :+: b)
   where
-    {-# INLINE gsumParseJSON #-}
+    {-# INLINABLE gsumParseJSON #-}
     gsumParseJSON !code !size v
       | code < sizeL = L <$> gsumParseJSON code           sizeL v
       | otherwise    = R <$> gsumParseJSON (code - sizeL) sizeR v
@@ -156,7 +156,7 @@ instance
 
 instance GFromJSON a => GSumFromJSON (CEq c p p a) where
   gsumParseJSON _ _ v = gparseJSON' v
-  {-# INLINE gsumParseJSON #-}
+  {-# INLINABLE gsumParseJSON #-}
 
 instance {-# OVERLAPPABLE #-} GSumFromJSON (CEq c p q a) where
   gsumParseJSON _ _ _ = fail
@@ -171,7 +171,7 @@ instance
   ( GSumToJSON a, GSumToJSON b, GToJSON a, GToJSON b
   ) => GSumToJSON (a :+: b)
   where
-    {-# INLINE gsumToJSON #-}
+    {-# INLINABLE gsumToJSON #-}
     gsumToJSON !code !size x =
       let sizeL = size `shiftR` 1
           sizeR = size - sizeL
@@ -181,11 +181,11 @@ instance
 
 instance GToJSON a => GSumToJSON (CEq c p p a) where
   gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON' ca)
-  {-# INLINE gsumToJSON #-}
+  {-# INLINABLE gsumToJSON #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GSumToJSON (CEq c p q a) where
   gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON' ca)
-  {-# INLINE gsumToJSON #-}
+  {-# INLINABLE gsumToJSON #-}
 
 --------------------------------------------------------------------------------
 
@@ -195,10 +195,10 @@ class GSumSize a where
 newtype Tagged s b = Tagged { unTagged :: b }
 
 instance (GSumSize a, GSumSize b) => GSumSize (a :+: b) where
-  {-# INLINE sumSize #-}
+  {-# INLINABLE sumSize #-}
   sumSize = Tagged (unTagged (sumSize :: Tagged a Integer) +
                     unTagged (sumSize :: Tagged b Integer))
 
 instance GSumSize (CEq c p q a) where
-  {-# INLINE sumSize #-}
+  {-# INLINABLE sumSize #-}
   sumSize = Tagged 1
