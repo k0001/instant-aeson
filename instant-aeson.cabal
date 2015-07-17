@@ -1,5 +1,5 @@
 name:                instant-aeson
-version:             0.1
+version:             0.1.0.1
 author:              Renzo Carbonara
 maintainer:          renzo@carbonara.com.ar
 copyright:           Renzo Carbonara 2015
@@ -19,7 +19,7 @@ library
   build-depends:
       aeson >=0.8 && <0.10
     , base >=4.8 && <4.9
-    , instant-generics >=0.4 && <0.5
+    , instant-generics >=0.4 && <0.6
   ghcjs-options: -Wall -O3
   ghc-options: -Wall -O2
 
