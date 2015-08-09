@@ -1,11 +1,14 @@
 name:                instant-aeson
-version:             0.1.0.1
+version:             0.2
 author:              Renzo Carbonara
 maintainer:          renzo@carbonara.com.ar
 copyright:           Renzo Carbonara 2015
 license:             BSD3
 license-file:        LICENSE.txt
-category:            Web
+stability:           Experimental
+homepage:            https://github.com/k0001/instant-aeson
+bug-reports:         https://github.com/k0001/instant-aeson/issues
+category:            Generics
 build-type:          Simple
 extra-source-files:  README.md CHANGELOG.md
 cabal-version:       >=1.18
