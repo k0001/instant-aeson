@@ -22,7 +22,9 @@ import Data.Proxy
 
 import qualified Generics.Instant as GI
 import qualified Generics.Instant.TH as GI
-import Generics.Instant.Functions.Aeson (GFromJSON, gparseJSON, GToJSON, gtoJSON)
+import Generics.Instant.Functions.Aeson (GFromJSON, gparseJSONDefault,
+                                         GToJSON, gtoJSONDefault,
+                                         RepGToJSON, RepGFromJSON)
 
 --------------------------------------------------------------------------------
 -- orphans
@@ -50,8 +52,8 @@ instance Arbitrary ZZ where
                        , ZZ2 <$> QC.arbitrary
                        , ZZ3 <$> QC.arbitrary ]
 
-instance Ae.ToJSON ZZ where toJSON = gtoJSON
-instance Ae.FromJSON ZZ where parseJSON = gparseJSON
+instance Ae.ToJSON ZZ where toJSON = gtoJSONDefault
+instance Ae.FromJSON ZZ where parseJSON = gparseJSONDefault
 
 --------------------------------------------------------------------------------
 -- GADT
@@ -137,7 +139,5 @@ tests = testGroup "QuickCheck - prop_IdJSON"
   , QC.testProperty "Bar2 Float 'False" (prop_IdJSON :: Bar2 Float 'False -> Bool)
   ]
 
-prop_IdJSON
-  :: (Eq a, GI.Representable a, GToJSON (GI.Rep a), GFromJSON (GI.Rep a), Show a)
-  => a -> Bool
-prop_IdJSON a = maybe False (== a) $ Ae.parseMaybe gparseJSON (gtoJSON a)
+prop_IdJSON :: (Eq a, Show a, RepGToJSON a, RepGFromJSON a) => a -> Bool
+prop_IdJSON a = maybe False (== a) $ Ae.parseMaybe gparseJSONDefault (gtoJSONDefault a)
