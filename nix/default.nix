@@ -11,7 +11,7 @@
 
 mkDerivation {
   pname = "instant-aeson";
-  version = "0.1.0.1";
+  version = "0.2";
   homepage = "https://github.com/k0001/instant-aeson";
   description = "Generic Aeson instances through instant-generics";
   license = stdenv.lib.licenses.bsd3;
