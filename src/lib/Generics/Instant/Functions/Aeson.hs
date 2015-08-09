@@ -5,14 +5,17 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Generics.Instant.Functions.Aeson
   ( -- $defaults
-    gtoJSON
-  , gparseJSON
+    gtoJSONDefault
+  , gparseJSONDefault
+  , RepGToJSON
+  , RepGFromJSON
     -- * Internals
-  , GToJSON
-  , GFromJSON
+  , GToJSON(gtoJSON)
+  , GFromJSON(gparseJSON)
     -- ** Even more internal
   , GSumFromJSON
   , GSumToJSON
@@ -27,57 +30,71 @@ import           Generics.Instant
 --------------------------------------------------------------------------------
 -- $defaults
 --
--- You can use 'gtoJSON' and 'gparseJSON' as your generic 'Ae.toJSON' and
--- 'Ae.parseJSON' implementations for any 'Representable' type as follows:
+-- You can use 'gtoJSONDefault' and 'gparseJSONDefault' as your generic
+-- 'Ae.toJSON' and 'Ae.parseJSON' implementations for any 'Representable'
+-- type as follows:
 --
 -- @
--- instance 'Ae.ToJSON' MyType where toJSON = 'gtoJSON'
--- instance 'Ae.FromJSON' MyType where parseJSON = 'gparseJSON'
+-- instance 'Ae.ToJSON' MyType where toJSON = 'gtoJSONDefault'
+-- instance 'Ae.FromJSON' MyType where parseJSON = 'gparseJSONDefault'
 -- @
 
-gtoJSON :: (Representable a, GToJSON (Rep a)) => a -> Ae.Value
-gtoJSON = \a -> gtoJSON' (from a)
-{-# INLINABLE gtoJSON #-}
+gtoJSONDefault :: (Representable a, GToJSON (Rep a)) => a -> Ae.Value
+gtoJSONDefault = \a -> gtoJSON (from a)
+{-# INLINABLE gtoJSONDefault #-}
 
-gparseJSON :: (Representable a, GFromJSON (Rep a)) => Ae.Value -> Ae.Parser a
-gparseJSON = \v -> fmap to (gparseJSON' v)
-{-# INLINABLE gparseJSON #-}
+gparseJSONDefault :: (Representable a, GFromJSON (Rep a)) => Ae.Value -> Ae.Parser a
+gparseJSONDefault = \v -> fmap to (gparseJSON v)
+{-# INLINABLE gparseJSONDefault #-}
+
+
+-- | @'RepGFromJSON'@ is simply a synonym for
+-- @('Representable' a, 'GFromJSON' ('Rep' a))@ with the convenient
+-- kind @(* -> 'GHC.Exts.Constraint')@
+class (Representable a, GFromJSON (Rep a)) => RepGFromJSON a
+instance (Representable a, GFromJSON (Rep a)) => RepGFromJSON a
+
+-- | @'RepGToJSON'@ is simply a synonym for
+-- @('Representable' a, 'GToJSON' ('Rep' a))@ with the convenient
+-- kind @(* -> 'GHC.Exts.Constraint')@
+class (Representable a, GToJSON (Rep a)) => RepGToJSON a
+instance (Representable a, GToJSON (Rep a)) => RepGToJSON a
 
 --------------------------------------------------------------------------------
 
 class GFromJSON a where
-  gparseJSON' :: Ae.Value -> Ae.Parser a
+  gparseJSON :: Ae.Value -> Ae.Parser a
 
 instance GFromJSON Z where
-  gparseJSON' _ = fail
-    "Generics.Instant.Functions.Aeson.GFromJSON Z gparseJSON' - impossible"
+  gparseJSON _ = fail
+    "Generics.Instant.Functions.Aeson.GFromJSON Z gparseJSON - impossible"
 
 instance GFromJSON U where
-  gparseJSON' v = U <$ (Ae.parseJSON v :: Ae.Parser ())
-  {-# INLINABLE gparseJSON' #-}
+  gparseJSON v = U <$ (Ae.parseJSON v :: Ae.Parser ())
+  {-# INLINABLE gparseJSON #-}
 
 instance GFromJSON a => GFromJSON (CEq c p p a) where
-  gparseJSON' v = gparseJSON' v >>= \a -> return (C a)
-  {-# INLINABLE gparseJSON' #-}
+  gparseJSON v = gparseJSON v >>= \a -> return (C a)
+  {-# INLINABLE gparseJSON #-}
 
 instance {-# OVERLAPPABLE #-} GFromJSON (CEq c p q a) where
-  gparseJSON' _ = fail
-    "Generics.Instant.Functions.Aeson.GFtomJSON (CEq c p q a) gparseJSON' - impossible"
+  gparseJSON _ = fail
+    "Generics.Instant.Functions.Aeson.GFtomJSON (CEq c p q a) gparseJSON - impossible"
 
 instance Ae.FromJSON a => GFromJSON (Var a) where
-  gparseJSON' v = Ae.parseJSON v >>= \a -> return (Var a)
-  {-# INLINABLE gparseJSON' #-}
+  gparseJSON v = Ae.parseJSON v >>= \a -> return (Var a)
+  {-# INLINABLE gparseJSON #-}
 
 instance Ae.FromJSON a => GFromJSON (Rec a) where
-  gparseJSON' v = Ae.parseJSON v >>= \a -> return (Rec a)
-  {-# INLINABLE gparseJSON' #-}
+  gparseJSON v = Ae.parseJSON v >>= \a -> return (Rec a)
+  {-# INLINABLE gparseJSON #-}
 
 instance (GFromJSON a, GFromJSON b) => GFromJSON (a :*: b) where
-  gparseJSON' v = Ae.parseJSON v >>= \(va, vb) ->
-                  gparseJSON' va >>= \a ->
-                  gparseJSON' vb >>= \b ->
+  gparseJSON v = Ae.parseJSON v >>= \(va, vb) ->
+                  gparseJSON va >>= \a ->
+                  gparseJSON vb >>= \b ->
                   return (a :*: b)
-  {-# INLINABLE gparseJSON' #-}
+  {-# INLINABLE gparseJSON #-}
 
 -- Borrowed from the "binary" package, which borrowed this from "cereal".
 instance
@@ -85,46 +102,46 @@ instance
   , GFromJSON a, GFromJSON b
   ) => GFromJSON (a :+: b)
   where
-    gparseJSON' v = Ae.parseJSON v >>= \(code, v') ->
+    gparseJSON v = Ae.parseJSON v >>= \(code, v') ->
       let size = unTagged (sumSize :: Tagged (a :+: b) Integer)
       in if code < size
          then gsumParseJSON code size v'
          else fail "Generics.Instant.Functions.Aeson.GFromJSON (a :+: b) - \
                    \Unknown constructor"
-    {-# INLINABLE gparseJSON' #-}
+    {-# INLINABLE gparseJSON #-}
 
 --------------------------------------------------------------------------------
 
 class GToJSON a where
-  gtoJSON' :: a -> Ae.Value
+  gtoJSON :: a -> Ae.Value
 
 instance GToJSON Z where
-  gtoJSON' _ = error
-    "Generics.Instant.Functions.Aeson.GToJSON Z gtoJSON' - impossible"
+  gtoJSON _ = error
+    "Generics.Instant.Functions.Aeson.GToJSON Z gtoJSON - impossible"
 
 instance GToJSON U where
-  gtoJSON' U = Ae.toJSON ()
-  {-# INLINABLE gtoJSON' #-}
+  gtoJSON U = Ae.toJSON ()
+  {-# INLINABLE gtoJSON #-}
 
 instance GToJSON a => GToJSON (CEq c p p a) where
-  gtoJSON' (C a) = gtoJSON' a
-  {-# INLINABLE gtoJSON' #-}
+  gtoJSON (C a) = gtoJSON a
+  {-# INLINABLE gtoJSON #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GToJSON (CEq c p q a) where
-  gtoJSON' (C a) = gtoJSON' a
-  {-# INLINABLE gtoJSON' #-}
+  gtoJSON (C a) = gtoJSON a
+  {-# INLINABLE gtoJSON #-}
 
 instance Ae.ToJSON a => GToJSON (Var a) where
-  gtoJSON' (Var a) = Ae.toJSON a
-  {-# INLINABLE gtoJSON' #-}
+  gtoJSON (Var a) = Ae.toJSON a
+  {-# INLINABLE gtoJSON #-}
 
 instance Ae.ToJSON a => GToJSON (Rec a) where
-  gtoJSON' (Rec a) = Ae.toJSON a
-  {-# INLINABLE gtoJSON' #-}
+  gtoJSON (Rec a) = Ae.toJSON a
+  {-# INLINABLE gtoJSON #-}
 
 instance (GToJSON a, GToJSON b) => GToJSON (a :*: b) where
-  gtoJSON' (a :*: b) = Ae.toJSON (gtoJSON' a, gtoJSON' b)
-  {-# INLINABLE gtoJSON' #-}
+  gtoJSON (a :*: b) = Ae.toJSON (gtoJSON a, gtoJSON b)
+  {-# INLINABLE gtoJSON #-}
 
 -- Borrowed from the "binary" package, which borrowed this from "cereal".
 instance
@@ -132,10 +149,10 @@ instance
   , GToJSON a, GToJSON b
   ) => GToJSON (a :+: b)
   where
-    gtoJSON' x =
+    gtoJSON x =
       let size = unTagged (sumSize :: Tagged (a :+: b) Integer)
       in gsumToJSON 0 size x
-    {-# INLINABLE gtoJSON' #-}
+    {-# INLINABLE gtoJSON #-}
 
 --------------------------------------------------------------------------------
 
@@ -155,7 +172,7 @@ instance
         sizeR = size - sizeL
 
 instance GFromJSON a => GSumFromJSON (CEq c p p a) where
-  gsumParseJSON _ _ v = gparseJSON' v
+  gsumParseJSON _ _ v = gparseJSON v
   {-# INLINABLE gsumParseJSON #-}
 
 instance {-# OVERLAPPABLE #-} GSumFromJSON (CEq c p q a) where
@@ -180,11 +197,11 @@ instance
            R r -> gsumToJSON (code + sizeL) sizeR r
 
 instance GToJSON a => GSumToJSON (CEq c p p a) where
-  gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON' ca)
+  gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON ca)
   {-# INLINABLE gsumToJSON #-}
 
 instance {-# OVERLAPPABLE #-} GToJSON a => GSumToJSON (CEq c p q a) where
-  gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON' ca)
+  gsumToJSON !code _ ca = Ae.toJSON (code, gtoJSON ca)
   {-# INLINABLE gsumToJSON #-}
 
 --------------------------------------------------------------------------------
