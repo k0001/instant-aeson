@@ -1,3 +1,8 @@
+# Version 0.2.0.1
+
+* Raise upper bounds on dependencies.
+
+
 # Version 0.2
 
 * Rename 'gtoJSON' to 'gtoJSONDefault'.

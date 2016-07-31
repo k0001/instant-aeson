@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -39,8 +40,11 @@ instance GI.Representable () where
 GI.deriveAll ''Either
 
 instance Arbitrary (Proxy a) where arbitrary = return Proxy
+
+#if !MIN_VERSION_aeson(0,11,1)
 instance Ae.ToJSON (Proxy a) where toJSON _ = Ae.toJSON ()
 instance Ae.FromJSON (Proxy a) where parseJSON v = Ae.parseJSON v >>= \() -> return Proxy
+#endif
 
 --------------------------------------------------------------------------------
 -- many constructors, recursive
